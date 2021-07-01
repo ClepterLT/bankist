@@ -182,6 +182,33 @@ btnTransfer.addEventListener("click", function (e) {
   }
 });
 
+btnClose.addEventListener("click", function (e) {
+  e.preventDefault();
+
+  const closureAccount = inputCloseUsername.value;
+  const closurePIN = Number(inputClosePin.value);
+
+  if (
+    currentAccount.username === closureAccount &&
+    currentAccount.pin === closurePIN
+  ) {
+    // Find account to delete in array
+    const closureIndex = accounts.findIndex(
+      (acc) => acc.username === currentAccount.username
+    );
+
+    // Delete account
+    accounts.splice(closureIndex, 1);
+
+    // Hide UI
+    currentAccount = "";
+    containerApp.style.opacity = 0;
+    inputCloseUsername.value = inputClosePin.value = "";
+  } else {
+    console.log("Credentials doesn't match with your account credentials.");
+  }
+});
+
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
