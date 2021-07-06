@@ -55,6 +55,7 @@ const labelSumIn = document.querySelector(".summary__value--in");
 const labelSumOut = document.querySelector(".summary__value--out");
 const labelSumInterest = document.querySelector(".summary__value--interest");
 const labelTimer = document.querySelector(".timer");
+const labelLoan = document.querySelector(".js--loan-label");
 
 const containerApp = document.querySelector(".app");
 const containerMovements = document.querySelector(".movements");
@@ -194,16 +195,43 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 };
 
+const setLogoutTimer = function (seconds) {
+  // Avoiding timer start delay
+  const tick = function () {
+    // Setting argument to minutes and seconds
+    let min = String(Math.trunc(seconds / 60)).padStart(2, 0);
+    let sec = String(seconds % 60).padStart(2, 0);
+
+    // Updating UI
+    labelTimer.textContent = `${min}:${sec}`;
+
+    // After 5 minutes logout
+    if (seconds === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = `Log in to get started`;
+      containerApp.style.opacity = 0;
+    }
+
+    // Decrease timer
+    seconds--;
+  };
+
+  // Call the timer every second
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
+};
+
 /////////////////////////////////////////////////
 // EVENT HANDLERS
 
-let currentAccount;
+let currentAccount, timer;
 
 // ****************************
 // FAKED LOGGED IN
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
+// currentAccount = account1;
+// updateUI(currentAccount);
+// containerApp.style.opacity = 100;
 // **************************
 
 btnLogin.addEventListener("click", function (e) {
@@ -252,6 +280,10 @@ btnLogin.addEventListener("click", function (e) {
     inputLoginUsername.value = inputLoginPin.value = "";
     inputLoginPin.blur();
 
+    // Logout timer
+    if (timer) clearInterval(timer);
+    timer = setLogoutTimer(300);
+
     // Updating UI
     updateUI(currentAccount);
   }
@@ -287,7 +319,9 @@ btnTransfer.addEventListener("click", function (e) {
     // Update UI
     updateUI(currentAccount);
 
-    console.log("TRANSFER VALID");
+    // Reset logout timer
+    clearInterval(timer);
+    timer = setLogoutTimer(300);
   }
 });
 
@@ -300,12 +334,17 @@ btnLoan.addEventListener("click", function (e) {
     amount > 0 &&
     currentAccount.movements.some((mov) => mov >= amount * 0.1)
   ) {
-    // Add the movement
-    currentAccount.movements.push(amount);
-    // Add the movement date
-    currentAccount.movementsDates.push(new Date().toISOString());
-    // Updating UI
-    updateUI(currentAccount);
+    setTimeout(function () {
+      // Add the movement
+      currentAccount.movements.push(amount);
+      // Add the movement date
+      currentAccount.movementsDates.push(new Date().toISOString());
+      // Updating UI
+      updateUI(currentAccount);
+      // Show and later close confirmation message
+      labelLoan.textContent = "Loan approved!";
+      setTimeout(() => (labelLoan.textContent = "Request loan"), 2500);
+    }, 2500);
   } else {
     console.log(
       "I am very sorry, but you do not meet conditions to get the loan 😓"
@@ -313,6 +352,10 @@ btnLoan.addEventListener("click", function (e) {
   }
   // Empty the input field
   inputLoanAmount.value = "";
+
+  // Reset logout timer
+  clearInterval(timer);
+  timer = setLogoutTimer(300);
 });
 
 btnClose.addEventListener("click", function (e) {
@@ -347,6 +390,10 @@ btnSort.addEventListener("click", function (e) {
   e.preventDefault();
   displayMovements(currentAccount, !sorted);
   sorted = !sorted;
+
+  // Reset logout timer
+  clearInterval(timer);
+  timer = setLogoutTimer(300);
 });
 
 /////////////////////////////////////////////////
